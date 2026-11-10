@@ -1,4 +1,5 @@
 from database.distributore_DAO import DistributoreDAO
+from database.DB_connect import DBConnect
 
 '''
     MODELLO:
@@ -19,12 +20,36 @@ class Model:
         """ Carica tutti i distributori e li setta nella variabile self._distributori """
         self._distributori = DistributoreDAO.get_distributori()
 
+'''???????'''
     def get_prezzo_medio(self, mese:int):
         """
         Calcola, per ogni distributore, il prezzo medio al litro per il mese selezionato.
         :param mese: Mese selezionato (un intero da 1 a 12)
         :return: lista di tuple --> (nome del distributore, media), es. (Distributore A, 1.789)
         """
+        cnx= DBConnect()
+        if cnx is None:
+            return None
+        cursore=cnx.cursor(dictionary=True)
+        query='SELECT id,nome,indirizzo FROM distributore_DAO'
+        risultato=[]
+        try:
+            cursore.execute(query)
+            for riga in cursore:
+                distributore=Distributore(
+                    id=riga['id'],
+                    nome=riga['nome'],
+                    indirizzo=riga['indirizzo'],
+                )
+                risultato.append(distributore)
+            cursore.close()
+            cnx.close()
+            return risultato
+        except Exception as e:
+            print(f"Errore durante la lettura degli strumenti: {e}")
+            cursore.close()
+            cnx.close()
+            return None
         # TODO
 
     def get_sequenza_ottima(self, mese:int):
